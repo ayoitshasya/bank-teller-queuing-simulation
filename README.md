@@ -169,6 +169,4 @@ Teller utilization drops from 74.9% to 55.6%.
 
 ---
 
-## Team
 
-Built as part of an MS Lab assignment by a team of 3 students over 5 days.

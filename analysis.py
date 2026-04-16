@@ -119,20 +119,74 @@ def print_comparison(overall_a, overall_b, num_rep, sim_duration, arrival_mean):
     print("=" * 60)
 
 
-def print_recommendation(overall_a, overall_b):
+def print_recommendation(overall_a, overall_b, current_tellers=2, proposed_tellers=3):
     """
-    Computes and prints the improvement from adding a 3rd teller.
+    Computes and prints the improvement from adding tellers,
+    along with actionable steps on HOW to implement the change.
     """
+    added = proposed_tellers - current_tellers
+
     wait_reduction_pct = (
         (overall_a["avg_wait"] - overall_b["avg_wait"]) / overall_a["avg_wait"]
+    ) * 100
+    queue_reduction_pct = (
+        (overall_a["avg_queue"] - overall_b["avg_queue"]) / overall_a["avg_queue"]
     ) * 100
 
     util_a = overall_a["utilization_pct"]
     util_b = overall_b["utilization_pct"]
+    util_drop = util_a - util_b
+
+    # Decide verdict based on results
+    significant_improvement = wait_reduction_pct >= 20
+    tellers_word = "teller" if added == 1 else "tellers"
 
     print("\n" + "=" * 60)
-    print("RECOMMENDATION: Adding a 3rd teller reduces average wait")
-    print(f"time by ~{wait_reduction_pct:.1f}% "
-          f"(from {overall_a['avg_wait']:.2f} min to {overall_b['avg_wait']:.2f} min).")
-    print(f"Teller utilization drops from {util_a:.1f}% to {util_b:.1f}%.")
+    print("  SIMULATION RECOMMENDATION")
     print("=" * 60)
+
+    if significant_improvement:
+        print(f"\n✅ VERDICT: Add {added} more {tellers_word} "
+              f"({current_tellers} → {proposed_tellers})")
+    else:
+        print(f"\n⚠  VERDICT: Marginal benefit from adding {added} {tellers_word} "
+              f"({current_tellers} → {proposed_tellers}) — review carefully.")
+
+    print(f"\n📊 Key Metrics:")
+    print(f"   Avg wait time   : {overall_a['avg_wait']:.2f} min → "
+          f"{overall_b['avg_wait']:.2f} min  "
+          f"(↓ {wait_reduction_pct:.1f}%)")
+    print(f"   Avg queue length: {overall_a['avg_queue']:.2f} → "
+          f"{overall_b['avg_queue']:.2f}  "
+          f"(↓ {queue_reduction_pct:.1f}%)")
+    print(f"   Teller utiliz.  : {util_a:.1f}% → {util_b:.1f}%  "
+          f"(↓ {util_drop:.1f} pp)")
+
+    if significant_improvement:
+        print(f"\n🔧 HOW TO ADD {added} {tellers_word.upper()}:")
+        print(f"   Step 1 — Staff:    Hire or reassign {added} trained teller(s).")
+        print(f"            If budget is tight, consider moving a back-office staff")
+        print(f"            member to the teller window during peak hours (9–11 AM,")
+        print(f"            1–3 PM) rather than hiring full-time.")
+        print(f"   Step 2 — Workstation: Set up {added} additional teller counter(s)")
+        print(f"            with a PC, cash drawer, and receipt printer.")
+        print(f"            If physical space is limited, a temporary 'express' desk")
+        print(f"            for simple transactions (deposits, withdrawals) works well.")
+        print(f"   Step 3 — Queuing:  Ensure the single FIFO queue feeds all")
+        print(f"            {proposed_tellers} tellers (do NOT create separate per-teller lines —")
+        print(f"            a single shared queue is always more efficient).")
+        print(f"   Step 4 — Schedule: Run the {proposed_tellers}-teller setup during peak hours.")
+        print(f"            Off-peak hours (early morning, late afternoon) may not")
+        print(f"            need all {proposed_tellers} tellers active.")
+        print(f"   Step 5 — Monitor:  After 2–4 weeks, track actual avg wait times")
+        print(f"            and compare with this simulation's prediction of")
+        print(f"            ~{overall_b['avg_wait']:.1f} min. Adjust schedule if needed.")
+    else:
+        print(f"\n💡 ALTERNATIVE SUGGESTIONS (since gains are marginal):")
+        print(f"   - Investigate if service time can be reduced (e.g., digital forms,")
+        print(f"     pre-filled slips, self-service kiosks for simple transactions).")
+        print(f"   - Consider shifting customer demand via appointment scheduling.")
+        print(f"   - Re-run the simulation with a shorter service_mean to test the")
+        print(f"     impact of process improvements before investing in more staff.")
+
+    print("\n" + "=" * 60)
